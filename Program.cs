@@ -79,7 +79,9 @@ namespace NET5JsonDemos
 
         private class Employee
         {
-            [JsonInclude] // Allows use of non-public property accessor
+            // NEW: Allows use of non-public property accessor.
+            // Can also be used to include fields "per-field", rather than globally with JsonSerializerOptions.
+            [JsonInclude]
             public string Name { get; internal set; }
 
             public Employee Manager { get; set; }
@@ -88,7 +90,8 @@ namespace NET5JsonDemos
 
             public int YearsEmployed { get; set; }
 
-            [JsonIgnore(Condition = JsonIgnoreCondition.Never)] // Always include when (de)serializing regardless of global options
+            // NEW: Always include when (de)serializing regardless of global options
+            [JsonIgnore(Condition = JsonIgnoreCondition.Never)]
             public bool IsManager => Reports?.Count > 0;
         }
 
@@ -145,6 +148,7 @@ namespace NET5JsonDemos
 
         public class DescriptionConverter : JsonConverter<string>
         {
+            // NEW: opt-in for converter to handle null. Applied to both serialization and deserialization.
             public override bool HandleNull => true;
 
             [return: MaybeNull]
@@ -180,9 +184,11 @@ namespace NET5JsonDemos
         }
 
         public static Task<User> GetUserAsync(HttpClient client, int id)
+            // NEW: "Get" extension method on HttpClient. "Put" method also added.
             => client.GetFromJsonAsync<User>($"users/{id}");
 
         public static Task<HttpResponseMessage> PostUserAsync(HttpClient client, User user)
+            // NEW: "Post" extension method on HttpClient. "Put" method also added.
             => client.PostAsJsonAsync("users", user);
 
         static void PrintUser(User customer)
