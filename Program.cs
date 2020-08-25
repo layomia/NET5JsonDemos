@@ -16,7 +16,7 @@ namespace NET5JsonDemos
     {
         private static JsonSerializerOptions s_serializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web)
         {
-            IncludeFields = true,
+            IncludeFields = true, // NEW: globally include fields for (de)serialization
             WriteIndented = true,
         };
 
@@ -61,8 +61,11 @@ namespace NET5JsonDemos
 
             var options = new JsonSerializerOptions(s_serializerOptions)
             {
+                // NEW: globally ignore default values when writing null or default
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
+                // NEW: globally allow reading and writing numbers as JSON strings
                 NumberHandling = JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString,
+                // NEW: globally support preserving object references when (de)serializing
                 ReferenceHandler = ReferenceHandler.Preserve,
             };
 
@@ -76,16 +79,16 @@ namespace NET5JsonDemos
 
         private class Employee
         {
+            [JsonInclude] // Allows use of non-public property accessor
             public string Name { get; internal set; }
 
-            [JsonInclude] // Allows use of non-public property accessor.
             public Employee Manager { get; set; }
 
             public List<Employee> Reports;
 
             public int YearsEmployed { get; set; }
 
-            [JsonIgnore(Condition = JsonIgnoreCondition.Never)]
+            [JsonIgnore(Condition = JsonIgnoreCondition.Never)] // Always include when (de)serializing regardless of global options
             public bool IsManager => Reports?.Count > 0;
         }
 
@@ -130,6 +133,12 @@ namespace NET5JsonDemos
             [JsonConverter(typeof(DescriptionConverter))]
             public string Description { get; set; }
 
+            public Point()
+            {
+            }
+
+            // Specify which ctor should be used when deserializing.
+            // Attribute not needed if this is the only ctor.
             [JsonConstructor]
             public Point(int x, int y) => (X, Y) = (x, y);
         }
